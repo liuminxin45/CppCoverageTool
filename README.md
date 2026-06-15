@@ -12,6 +12,10 @@ CoverageTool is a Windows desktop GUI for running [OpenCppCoverage](https://gith
 - Switch the interface between English and Simplified Chinese at runtime.
 - Persist settings with `QSettings`.
 
+## Screenshot
+
+![CoverageTool screenshot](docs/screenshot.png)
+
 ## Requirements
 
 - Windows
