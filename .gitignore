@@ -1,0 +1,43 @@
+# Visual Studio / Qt build output
+.vs/
+/x64/
+/CoverageTool/x64/
+/CoverageTool/Debug/
+/CoverageTool/Release/
+/build*/
+/cmake-build-*/
+/out/
+/bin/
+/obj/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CMakeUserPresets.json
+*.obj
+*.pdb
+*.ilk
+*.tlog
+*.lastbuildstate
+*.recipe
+*.res
+*.aps
+*.suo
+*.user
+
+# Local runtime data
+*.log
+*.cov
+*.cbt
+*.dat
+LastCoverageResults.log
+
+# Temporary migration and backup output
+*.bak
+*.backup
+*.tmp
+*.zip
+
+# Nested dependency repositories should not be committed into this repo
+**/.git/
