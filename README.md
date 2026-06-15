@@ -5,7 +5,8 @@ CoverageTool is a Windows desktop GUI for running [OpenCppCoverage](https://gith
 ## Features
 
 - Detect `OpenCppCoverage.exe` from `PATH` and provide a GitHub download shortcut when it is missing.
-- Configure the target executable, source directory, PDB source path, output directory, excluded sources, and extra OpenCppCoverage arguments.
+- Configure the target executable, source directory, optional PDB source-path substitution, output directory, excluded sources, and extra OpenCppCoverage arguments.
+- Infer the working directory from the selected target executable.
 - Run coverage and generate HTML, binary COV, and Cobertura XML output.
 - Merge existing `.cov` files into HTML, binary COV, and Cobertura XML reports.
 - Switch the interface between English and Simplified Chinese at runtime.
