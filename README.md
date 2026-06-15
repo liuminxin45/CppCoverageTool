@@ -1,55 +1,55 @@
 # CoverageTool
 
-CoverageTool is a Windows desktop GUI for running [OpenCppCoverage](https://github.com/OpenCppCoverage/OpenCppCoverage). It detects `OpenCppCoverage.exe` from `PATH` and helps configure a target executable, source root, optional PDB source-path substitution, output formats, excluded source paths, and COV merging.
+CoverageTool 是一个 Windows 桌面端 [OpenCppCoverage](https://github.com/OpenCppCoverage/OpenCppCoverage) 图形界面工具。它会从 `PATH` 自动检测 `OpenCppCoverage.exe`，并提供目标程序、源码目录、可选 PDB 源码路径替换、输出格式、排除路径和 COV 文件合并等常用配置。
 
-## Features
+## 功能
 
-- Detect `OpenCppCoverage.exe` from `PATH` and provide a GitHub download shortcut when it is missing.
-- Configure the target executable, source directory, optional PDB source-path substitution, output directory, excluded sources, and extra OpenCppCoverage arguments.
-- Infer the working directory from the selected target executable.
-- Run coverage and generate HTML, binary COV, and Cobertura XML output.
-- Merge existing `.cov` files into HTML, binary COV, and Cobertura XML reports.
-- Switch the interface between English and Simplified Chinese at runtime.
-- Persist settings with `QSettings`.
+- 从 `PATH` 自动检测 `OpenCppCoverage.exe`，未检测到时提供 GitHub 下载入口。
+- 配置目标程序、源码目录、可选 PDB 源码路径替换、输出目录、排除源码路径和额外 OpenCppCoverage 参数。
+- 根据目标程序所在目录自动推断工作目录。
+- 执行覆盖率分析并生成 HTML、二进制 COV 和 Cobertura XML 结果。
+- 合并已有 `.cov` 文件，输出 HTML、二进制 COV 和 Cobertura XML 报告。
+- 支持运行时切换英文和简体中文界面。
+- 使用 `QSettings` 保存本地配置。
 
-## Screenshot
+## 程序截图
 
 ![CoverageTool screenshot](docs/screenshot.png)
 
-## Requirements
+## 环境要求
 
 - Windows
-- Visual Studio 2022 with the v143 toolset
-- CMake 3.16 or newer
-- Qt 5.12.12 x64 with CMake package files, for example `D:\Qt\Qt5.12.12\5.12.12\msvc2017_64`
-- OpenCppCoverage installed separately and available through `PATH`
+- Visual Studio 2022，包含 v143 工具集
+- CMake 3.16 或更高版本
+- Qt 5.12.12 x64，且包含 CMake package files，例如 `D:\Qt\Qt5.12.12\5.12.12\msvc2017_64`
+- 单独安装 OpenCppCoverage，并将其加入 `PATH`
 
-OpenCppCoverage, Qt, and other external tools are not bundled by this repository.
+本仓库不内置 OpenCppCoverage、Qt 或其他第三方工具二进制文件。
 
-## Build
+## 构建
 
 ```powershell
 .\build.ps1 -Configuration Debug -Platform x64
 .\build.ps1 -Configuration Release -Platform x64
 ```
 
-If Qt is not installed in a common path, pass it explicitly:
+如果 Qt 未安装在常见路径，可以显式传入 Qt 路径：
 
 ```powershell
 .\build.ps1 -Configuration Release -Platform x64 -QtDir D:\Qt\Qt5.12.12\5.12.12\msvc2017_64
 ```
 
-The repository uses CMake as the source build system. Generated Visual Studio files are written to `build/` and are not committed.
+本仓库使用 CMake 作为构建系统。生成的 Visual Studio 工程文件会写入 `build/`，不会提交到仓库。
 
-The repository does not bundle OpenCppCoverage, Qt, or other third-party binaries.
+本仓库不随源码分发 OpenCppCoverage、Qt 或其他第三方二进制文件。
 
-## Usage
+## 使用
 
-1. Start `CoverageTool.exe`.
-2. Confirm that OpenCppCoverage is detected. If it is not detected, use the download button and add it to `PATH`.
-3. Select the target executable and source directory. The working directory is inferred from the target executable folder.
-4. Optionally set the PDB source path, excluded sources, and extra OpenCppCoverage arguments.
-5. Select an output directory.
-6. Click `Run coverage`.
+1. 启动 `CoverageTool.exe`。
+2. 确认 OpenCppCoverage 已被检测到。如果未检测到，点击下载按钮安装，并将其加入 `PATH`。
+3. 选择目标程序和源码目录。工作目录会自动使用目标程序所在目录。
+4. 按需设置 PDB 源码路径、排除源码路径和额外 OpenCppCoverage 参数。
+5. 选择输出目录。
+6. 点击 `运行覆盖率`。
 
-For merging, select a directory containing `.cov` files and click `Merge COV files`.
+如果需要合并覆盖率文件，选择包含 `.cov` 文件的目录，然后点击 `合并 COV 文件`。
