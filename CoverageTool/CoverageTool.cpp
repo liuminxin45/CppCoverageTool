@@ -10,6 +10,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFormLayout>
+#include <QFrame>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -46,10 +47,18 @@ const Translation kTranslations[] = {
     {"Ready. Configure OpenCppCoverage and target paths, then start coverage.",
      "就绪。请配置 OpenCppCoverage 和目标路径，然后开始覆盖率分析。"},
     {"CoverageTool", "CoverageTool"},
+    {"A focused GUI for OpenCppCoverage command workflows.",
+     "把 OpenCppCoverage 命令流程变成清晰的图形化操作。"},
     {"Language", "语言"},
     {"English", "English"},
     {"Chinese", "中文"},
-    {"Coverage settings", "覆盖率设置"},
+    {"Coverage workflow", "覆盖率运行"},
+    {"Select the executable, source root and report directory. The command is generated from these "
+     "explicit settings.",
+     "选择目标程序、源码根目录和报告目录，工具会根据这些显式设置生成覆盖率命令。"},
+    {"Rules and arguments", "输出与规则"},
+    {"Fine tune source filtering and OpenCppCoverage switches without rewriting the full command.",
+     "集中调整源码排除规则和 OpenCppCoverage 参数，不需要反复手写完整命令。"},
     {"OpenCppCoverage status", "OpenCppCoverage 状态"},
     {"Found in PATH: %1", "已在 PATH 中找到：%1"},
     {"Not found in PATH. Install OpenCppCoverage and add it to PATH.",
@@ -81,6 +90,9 @@ const Translation kTranslations[] = {
     {"Save settings", "保存设置"},
     {"Reload settings", "重新加载设置"},
     {"Merge coverage files", "合并覆盖率文件"},
+    {"Pick a folder that already contains .cov files and produce one merged report under the "
+     "output directory.",
+     "选择已包含 .cov 文件的目录，并在输出目录下生成一份合并报告。"},
     {"Directory containing .cov files", "包含 .cov 文件的目录"},
     {"COV directory", "COV 目录"},
     {"Merge COV files", "合并 COV 文件"},
@@ -187,27 +199,46 @@ void CoverageTool::buildUi()
 {
     auto *central = new QWidget(this);
     auto *rootLayout = new QVBoxLayout(central);
-    rootLayout->setContentsMargins(16, 16, 16, 16);
-    rootLayout->setSpacing(12);
+    rootLayout->setContentsMargins(18, 18, 18, 18);
+    rootLayout->setSpacing(14);
+    applyVisualStyle(central);
 
-    auto *headerLayout = new QHBoxLayout();
+    auto *headerFrame = new QFrame(central);
+    headerFrame->setObjectName(QStringLiteral("HeaderFrame"));
+    auto *headerLayout = new QHBoxLayout(headerFrame);
+    headerLayout->setContentsMargins(18, 16, 18, 16);
+    headerLayout->setSpacing(12);
+
+    auto *titleLayout = new QVBoxLayout();
+    titleLayout->setContentsMargins(0, 0, 0, 0);
+    titleLayout->setSpacing(4);
     titleLabel_ = new QLabel(central);
-    QFont titleFont = titleLabel_->font();
-    titleFont.setPointSize(16);
-    titleFont.setBold(true);
-    titleLabel_->setFont(titleFont);
+    titleLabel_->setObjectName(QStringLiteral("TitleLabel"));
+    subtitleLabel_ = new QLabel(central);
+    subtitleLabel_->setObjectName(QStringLiteral("SubtitleLabel"));
+    titleLayout->addWidget(titleLabel_);
+    titleLayout->addWidget(subtitleLabel_);
+
     languageLabel_ = new QLabel(central);
     languageCombo_ = new QComboBox(central);
     languageCombo_->setMinimumWidth(132);
-    headerLayout->addWidget(titleLabel_);
+
+    headerLayout->addLayout(titleLayout, 1);
     headerLayout->addStretch();
     headerLayout->addWidget(languageLabel_);
     headerLayout->addWidget(languageCombo_);
-    rootLayout->addLayout(headerLayout);
+    rootLayout->addWidget(headerFrame);
 
     settingsGroup_ = new QGroupBox(central);
     settingsForm_ = new QFormLayout(settingsGroup_);
     settingsForm_->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+    settingsForm_->setLabelAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    settingsForm_->setHorizontalSpacing(14);
+    settingsForm_->setVerticalSpacing(10);
+
+    workflowHintLabel_ = createHelpLabel(settingsGroup_);
+    workflowHintLabel_->setWordWrap(true);
+    settingsForm_->addRow(QString(), workflowHintLabel_);
 
     targetExeEdit_ = new QLineEdit(settingsGroup_);
     sourceDirectoryEdit_ = new QLineEdit(settingsGroup_);
@@ -231,44 +262,70 @@ void CoverageTool::buildUi()
     settingsForm_->addRow(QString(), pdbSourcePathRow_);
     settingsForm_->addRow(QString(), outputDirectoryRow_);
 
-    excludedSourcesEdit_ = new QTextEdit(settingsGroup_);
+    auto *coverageActions = new QHBoxLayout();
+    coverageActions->setContentsMargins(0, 2, 0, 0);
+    runCoverageButton_ = new QPushButton(central);
+    runCoverageButton_->setObjectName(QStringLiteral("PrimaryButton"));
+    openOutputButton_ = new QPushButton(central);
+    coverageActions->addWidget(runCoverageButton_);
+    coverageActions->addWidget(openOutputButton_);
+    coverageActions->addStretch();
+    settingsForm_->addRow(QString(), coverageActions);
+
+    rulesGroup_ = new QGroupBox(central);
+    rulesForm_ = new QFormLayout(rulesGroup_);
+    rulesForm_->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+    rulesForm_->setLabelAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    rulesForm_->setHorizontalSpacing(14);
+    rulesForm_->setVerticalSpacing(10);
+
+    rulesHintLabel_ = createHelpLabel(rulesGroup_);
+    rulesHintLabel_->setWordWrap(true);
+    rulesForm_->addRow(QString(), rulesHintLabel_);
+
+    excludedSourcesEdit_ = new QTextEdit(rulesGroup_);
     excludedSourcesEdit_->setAcceptRichText(false);
-    excludedSourcesEdit_->setFixedHeight(72);
-    settingsForm_->addRow(QString(), excludedSourcesEdit_);
+    excludedSourcesEdit_->setFixedHeight(112);
+    rulesForm_->addRow(QString(), excludedSourcesEdit_);
 
-    extraArgumentsEdit_ = new QTextEdit(settingsGroup_);
+    extraArgumentsEdit_ = new QTextEdit(rulesGroup_);
     extraArgumentsEdit_->setAcceptRichText(false);
-    extraArgumentsEdit_->setFixedHeight(52);
-    settingsForm_->addRow(QString(), extraArgumentsEdit_);
+    extraArgumentsEdit_->setFixedHeight(74);
+    rulesForm_->addRow(QString(), extraArgumentsEdit_);
 
-    coverChildrenCheck_ = new QCheckBox(settingsGroup_);
-    optimizedBuildCheck_ = new QCheckBox(settingsGroup_);
+    coverChildrenCheck_ = new QCheckBox(rulesGroup_);
+    optimizedBuildCheck_ = new QCheckBox(rulesGroup_);
     coverChildrenCheck_->setChecked(true);
     optimizedBuildCheck_->setChecked(true);
-    optionsRow_ = new QWidget(settingsGroup_);
+    optionsRow_ = new QWidget(rulesGroup_);
     auto *optionsLayout = new QHBoxLayout(optionsRow_);
     optionsLayout->setContentsMargins(0, 0, 0, 0);
+    optionsLayout->setSpacing(16);
     optionsLayout->addWidget(coverChildrenCheck_);
     optionsLayout->addWidget(optimizedBuildCheck_);
     optionsLayout->addStretch();
-    settingsForm_->addRow(QString(), optionsRow_);
+    rulesForm_->addRow(QString(), optionsRow_);
 
-    rootLayout->addWidget(settingsGroup_);
-
-    auto *actionsLayout = new QHBoxLayout();
-    runCoverageButton_ = new QPushButton(central);
-    openOutputButton_ = new QPushButton(central);
+    auto *settingsActions = new QHBoxLayout();
+    settingsActions->setContentsMargins(0, 2, 0, 0);
     saveSettingsButton_ = new QPushButton(central);
     reloadSettingsButton_ = new QPushButton(central);
-    actionsLayout->addWidget(runCoverageButton_);
-    actionsLayout->addWidget(openOutputButton_);
-    actionsLayout->addStretch();
-    actionsLayout->addWidget(saveSettingsButton_);
-    actionsLayout->addWidget(reloadSettingsButton_);
-    rootLayout->addLayout(actionsLayout);
+    settingsActions->addWidget(saveSettingsButton_);
+    settingsActions->addWidget(reloadSettingsButton_);
+    settingsActions->addStretch();
+    rulesForm_->addRow(QString(), settingsActions);
 
     mergeGroup_ = new QGroupBox(central);
     mergeForm_ = new QFormLayout(mergeGroup_);
+    mergeForm_->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+    mergeForm_->setLabelAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    mergeForm_->setHorizontalSpacing(14);
+    mergeForm_->setVerticalSpacing(10);
+
+    mergeHintLabel_ = createHelpLabel(mergeGroup_);
+    mergeHintLabel_->setWordWrap(true);
+    mergeForm_->addRow(QString(), mergeHintLabel_);
+
     mergeDirectoryEdit_ = new QLineEdit(mergeGroup_);
     mergeBrowseButton_ = new QPushButton(mergeGroup_);
     mergeDirectoryRow_ = createPathRow(mergeDirectoryEdit_, mergeBrowseButton_);
@@ -280,20 +337,39 @@ void CoverageTool::buildUi()
     mergeButtons->addWidget(openMergeButton_);
     mergeButtons->addStretch();
     mergeForm_->addRow(QString(), mergeButtons);
-    rootLayout->addWidget(mergeGroup_);
+
+    auto *workLayout = new QHBoxLayout();
+    workLayout->setContentsMargins(0, 0, 0, 0);
+    workLayout->setSpacing(14);
+    auto *leftColumn = new QVBoxLayout();
+    leftColumn->setContentsMargins(0, 0, 0, 0);
+    leftColumn->setSpacing(14);
+    auto *rightColumn = new QVBoxLayout();
+    rightColumn->setContentsMargins(0, 0, 0, 0);
+    rightColumn->setSpacing(14);
+    leftColumn->addWidget(settingsGroup_);
+    leftColumn->addStretch();
+    rightColumn->addWidget(rulesGroup_);
+    rightColumn->addWidget(mergeGroup_);
+    rightColumn->addStretch();
+    workLayout->addLayout(leftColumn, 3);
+    workLayout->addLayout(rightColumn, 2);
+    rootLayout->addLayout(workLayout);
 
     logGroup_ = new QGroupBox(central);
     auto *logLayout = new QVBoxLayout(logGroup_);
+    logLayout->setContentsMargins(14, 18, 14, 14);
+    logLayout->setSpacing(10);
     logOutput_ = new QPlainTextEdit(logGroup_);
     logOutput_->setReadOnly(true);
-    logOutput_->setMinimumHeight(170);
+    logOutput_->setMinimumHeight(190);
     clearLogButton_ = new QPushButton(logGroup_);
     logLayout->addWidget(logOutput_);
     logLayout->addWidget(clearLogButton_, 0, Qt::AlignRight);
     rootLayout->addWidget(logGroup_, 1);
 
     setCentralWidget(central);
-    resize(980, 760);
+    resize(1180, 820);
 
     connect(languageCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
             &CoverageTool::onLanguageChanged);
@@ -319,6 +395,109 @@ void CoverageTool::buildUi()
     retranslateUi();
 }
 
+void CoverageTool::applyVisualStyle(QWidget *root)
+{
+    root->setObjectName(QStringLiteral("AppRoot"));
+    root->setStyleSheet(QStringLiteral(R"(
+        QWidget#AppRoot {
+            background: #f4f6f8;
+            color: #1f2933;
+            font-size: 13px;
+        }
+        QFrame#HeaderFrame {
+            background: #ffffff;
+            border: 1px solid #d9e2ec;
+            border-radius: 8px;
+        }
+        QLabel#TitleLabel {
+            color: #102a43;
+            font-size: 23px;
+            font-weight: 700;
+        }
+        QLabel#SubtitleLabel,
+        QLabel#HelpLabel {
+            color: #62748a;
+        }
+        QGroupBox {
+            background: #ffffff;
+            border: 1px solid #d9e2ec;
+            border-radius: 8px;
+            margin-top: 18px;
+            padding: 14px 12px 12px 12px;
+            font-weight: 600;
+            color: #102a43;
+        }
+        QGroupBox::title {
+            subcontrol-origin: margin;
+            left: 12px;
+            padding: 0 6px;
+            background: #ffffff;
+        }
+        QLineEdit,
+        QTextEdit,
+        QPlainTextEdit,
+        QComboBox {
+            background: #ffffff;
+            border: 1px solid #bcccdc;
+            border-radius: 6px;
+            padding: 6px 8px;
+            color: #102a43;
+            selection-background-color: #2563eb;
+        }
+        QLineEdit:focus,
+        QTextEdit:focus,
+        QPlainTextEdit:focus,
+        QComboBox:focus {
+            border-color: #2563eb;
+        }
+        QTextEdit,
+        QPlainTextEdit {
+            font-family: Consolas, "Cascadia Mono", monospace;
+            font-size: 12px;
+        }
+        QPushButton {
+            background: #ffffff;
+            border: 1px solid #bcccdc;
+            border-radius: 6px;
+            color: #102a43;
+            padding: 6px 12px;
+            min-height: 24px;
+        }
+        QPushButton:hover {
+            background: #eef2f7;
+            border-color: #9fb3c8;
+        }
+        QPushButton:pressed {
+            background: #d9e2ec;
+        }
+        QPushButton:disabled {
+            color: #9aa6b2;
+            background: #f4f6f8;
+        }
+        QPushButton#PrimaryButton {
+            background: #2563eb;
+            border-color: #1d4ed8;
+            color: #ffffff;
+            font-weight: 600;
+        }
+        QPushButton#PrimaryButton:hover {
+            background: #1d4ed8;
+        }
+        QCheckBox {
+            color: #243b53;
+            spacing: 8px;
+        }
+    )"));
+}
+
+QLabel *CoverageTool::createHelpLabel(QWidget *parent) const
+{
+    auto *label = new QLabel(parent);
+    label->setObjectName(QStringLiteral("HelpLabel"));
+    label->setWordWrap(true);
+    return label;
+}
+
 QWidget *CoverageTool::createPathRow(QLineEdit *lineEdit, QPushButton *button)
 {
     auto *row = new QWidget(this);
@@ -337,14 +516,14 @@ QWidget *CoverageTool::createCoverageStatusRow()
     layout->setSpacing(8);
 
     coverageStatusIcon_ = new QLabel(row);
-    coverageStatusIcon_->setMinimumWidth(22);
+    coverageStatusIcon_->setFixedSize(10, 10);
     coverageStatusLabel_ = new QLabel(row);
     coverageStatusLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
     refreshCoverageButton_ = new QPushButton(row);
     downloadCoverageButton_ = new QPushButton(row);
     downloadCoverageButton_->setIcon(style()->standardIcon(QStyle::SP_DialogOpenButton));
 
-    layout->addWidget(coverageStatusIcon_);
+    layout->addWidget(coverageStatusIcon_, 0, Qt::AlignVCenter);
     layout->addWidget(coverageStatusLabel_, 1);
     layout->addWidget(refreshCoverageButton_);
     layout->addWidget(downloadCoverageButton_);
@@ -376,6 +555,7 @@ void CoverageTool::retranslateUi()
 {
     setWindowTitle(uiText("CoverageTool"));
     titleLabel_->setText(uiText("CoverageTool"));
+    subtitleLabel_->setText(uiText("A focused GUI for OpenCppCoverage command workflows."));
     languageLabel_->setText(uiText("Language"));
 
     {
@@ -386,7 +566,10 @@ void CoverageTool::retranslateUi()
         languageCombo_->setCurrentIndex(currentLanguage_ == Language::Chinese ? 1 : 0);
     }
 
-    settingsGroup_->setTitle(uiText("Coverage settings"));
+    settingsGroup_->setTitle(uiText("Coverage workflow"));
+    workflowHintLabel_->setText(
+        uiText("Select the executable, source root and report directory. The command is generated "
+               "from these explicit settings."));
     targetExeEdit_->setPlaceholderText(uiText("Application executable to run under coverage"));
     sourceDirectoryEdit_->setPlaceholderText(
         uiText("Source root used by OpenCppCoverage --sources"));
@@ -408,14 +591,18 @@ void CoverageTool::retranslateUi()
     setFormLabel(settingsForm_, pdbSourcePathRow_, uiText("PDB source path"));
     setFormLabel(settingsForm_, outputDirectoryRow_, uiText("Output directory"));
 
+    rulesGroup_->setTitle(uiText("Rules and arguments"));
+    rulesHintLabel_->setText(
+        uiText("Fine tune source filtering and OpenCppCoverage switches without rewriting the full "
+               "command."));
     excludedSourcesEdit_->setPlaceholderText(uiText("One excluded source path per line"));
     extraArgumentsEdit_->setPlaceholderText(uiText("Optional extra OpenCppCoverage arguments"));
-    setFormLabel(settingsForm_, excludedSourcesEdit_, uiText("Excluded sources"));
-    setFormLabel(settingsForm_, extraArgumentsEdit_, uiText("Extra arguments"));
+    setFormLabel(rulesForm_, excludedSourcesEdit_, uiText("Excluded sources"));
+    setFormLabel(rulesForm_, extraArgumentsEdit_, uiText("Extra arguments"));
 
     coverChildrenCheck_->setText(uiText("Cover child processes"));
     optimizedBuildCheck_->setText(uiText("Use optimized build mode"));
-    setFormLabel(settingsForm_, optionsRow_, uiText("Options"));
+    setFormLabel(rulesForm_, optionsRow_, uiText("Options"));
 
     runCoverageButton_->setText(uiText("Run coverage"));
     openOutputButton_->setText(uiText("Open output"));
@@ -423,6 +610,9 @@ void CoverageTool::retranslateUi()
     reloadSettingsButton_->setText(uiText("Reload settings"));
 
     mergeGroup_->setTitle(uiText("Merge coverage files"));
+    mergeHintLabel_->setText(
+        uiText("Pick a folder that already contains .cov files and produce one merged report under "
+               "the output directory."));
     mergeDirectoryEdit_->setPlaceholderText(uiText("Directory containing .cov files"));
     mergeBrowseButton_->setText(uiText("Browse..."));
     setFormLabel(mergeForm_, mergeDirectoryRow_, uiText("COV directory"));
@@ -503,7 +693,9 @@ void CoverageTool::refreshCoverageStatus()
 {
     detectedCoverageProgram_ = detectCoverageProgram();
     const bool found = !detectedCoverageProgram_.isEmpty();
-    coverageStatusIcon_->setText(found ? QString::fromUtf8("✅") : QString::fromUtf8("⚠"));
+    coverageStatusIcon_->setStyleSheet(
+        found ? QStringLiteral("background: #16a34a; border-radius: 5px;")
+              : QStringLiteral("background: #f59e0b; border-radius: 5px;"));
     coverageStatusLabel_->setText(
         found ? uiText("Found in PATH: %1").arg(detectedCoverageProgram_)
               : uiText("Not found in PATH. Install OpenCppCoverage and add it to PATH."));

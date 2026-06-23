@@ -60,6 +60,8 @@ private:
     };
 
     void buildUi();
+    void applyVisualStyle(QWidget *root);
+    QLabel *createHelpLabel(QWidget *parent) const;
     QWidget *createPathRow(QLineEdit *lineEdit, QPushButton *button);
     QWidget *createCoverageStatusRow();
     QWidget *createTargetRow(QLineEdit *lineEdit, QPushButton *button);
@@ -87,13 +89,19 @@ private:
     void setRunning(bool running);
 
     QLabel *titleLabel_{nullptr};
+    QLabel *subtitleLabel_{nullptr};
     QLabel *languageLabel_{nullptr};
     QComboBox *languageCombo_{nullptr};
     QGroupBox *settingsGroup_{nullptr};
+    QGroupBox *rulesGroup_{nullptr};
     QGroupBox *mergeGroup_{nullptr};
     QGroupBox *logGroup_{nullptr};
     QFormLayout *settingsForm_{nullptr};
+    QFormLayout *rulesForm_{nullptr};
     QFormLayout *mergeForm_{nullptr};
+    QLabel *workflowHintLabel_{nullptr};
+    QLabel *rulesHintLabel_{nullptr};
+    QLabel *mergeHintLabel_{nullptr};
     QWidget *coverageStatusRow_{nullptr};
     QWidget *targetExeRow_{nullptr};
     QWidget *sourceDirectoryRow_{nullptr};
