@@ -54,7 +54,7 @@ The README now contains six real-run screenshots produced through direct CDP `Pa
 
 The Windows installer was built with the Windows .NET Framework compiler. Validation covered installation, verified bundled runtime contents, Windows registration/Start menu shortcut, frontend/service startup, an upgrade while running, orderly shutdown, uninstall, unchanged configuration and preserved untracked user files. The launcher checks a private per-instance shutdown token and only terminates its own process tree. It reuses a matching official Node.js binary in PATH when available, accommodating this machine's restriction on networking from new executable paths; the installer also contains the checksum-identical runtime for machines without Node.js.
 
-Jenkins release stages and build provenance are defined in `Jenkinsfile` and `docs/JENKINS.md`. Actual Jenkins execution/publication remains dependent on the user's controller, job and Windows agent configuration.
+Jenkins release stages and build provenance are defined in `Jenkinsfile` and `docs/JENKINS.md`. The local controller's build #4 completed successfully, archived all release artifacts, and the installer download was independently hashed. See [the publication record](JENKINS-RELEASE-2.0.1.md).
 
 ## Earlier 2.0 migration limits
 

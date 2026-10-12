@@ -10,4 +10,4 @@ This release adds a Windows installer, real coverage screenshots and a Jenkins r
 
 Run `CppCoverageTool-2.0.1-windows-x64-setup.exe`, then start CppCoverageTool from the Start menu. OpenCppCoverage must be installed separately. The portable ZIP still requires external Node.js. Installers are unsigned; verify the SHA-256 before installation.
 
-Jenkins publication requires the target controller/job/Windows agent. The pipeline's presence does not imply an actual Jenkins release has run.
+The Windows installer was published by local Jenkins build #4 with result SUCCESS. See [the verified publication record](JENKINS-RELEASE-2.0.1.md) for artifact links, source revision, checksums and passed release gates.

@@ -36,4 +36,4 @@ The pipeline definition is loaded from `main`; the application source is checked
 
 The browser verification harness is retained from the pipeline revision before switching to the application tag. This lets synchronization fixes validate older immutable application releases without changing their runtime code; its provenance is the same recorded pipeline commit.
 
-Actual publication requires a reachable Jenkins controller, a configured job and an available Windows agent. A checked-in Jenkinsfile alone is not evidence of a Jenkins release build.
+The local controller has published a verified release: see [Jenkins 2.0.1 release record](JENKINS-RELEASE-2.0.1.md). For another deployment, publication requires a reachable controller, a configured job and an available Windows agent.

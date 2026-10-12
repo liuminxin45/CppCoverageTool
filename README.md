@@ -54,6 +54,8 @@ The demo in [examples/coverage-demo](examples/coverage-demo) models pricing, shi
 
 Run `CppCoverageTool-2.0.1-windows-x64-setup.exe`. The installer installs for your Windows account, bundles a checksum-verified Node.js runtime, adds a Start menu shortcut and registers an uninstall entry in Windows Apps. No Qt, npm installation, administrator access or external Node.js installation is required. Install OpenCppCoverage separately.
 
+**Published local Jenkins release:** [Build #4 — SUCCESS](http://localhost:8080/job/CppCoverageTool-Windows-Release/4/), [download the Windows installer](http://localhost:8080/job/CppCoverageTool-Windows-Release/4/artifact/release/CppCoverageTool-2.0.1-windows-x64-setup.exe), [SHA-256 checksums](http://localhost:8080/job/CppCoverageTool-Windows-Release/4/artifact/release/SHA256SUMS.txt). These links use the local Jenkins controller and require Jenkins access. The archived installer was downloaded and its checksum verified after publication.
+
 The launcher reuses an existing Node.js executable in PATH only if its SHA-256 exactly matches the bundled official runtime; otherwise it uses the bundled copy. This accommodates managed Windows environments that approve network access by executable location.
 
 Launch **CppCoverageTool** from the Start menu. The workspace opens in your browser and a system tray icon keeps the local service available. Use the tray's **Exit** command to stop the service and any active coverage process. Closing the browser tab leaves the service running. Uninstall through Windows Apps; existing settings, reports and untracked user files are preserved.
@@ -68,7 +70,7 @@ Both variants listen only on `http://127.0.0.1:47831`; use `PORT` to select anot
 
 [Jenkinsfile](Jenkinsfile) builds a tagged release on a Windows agent, runs validation and the real demo/CDP capture, builds and tests the installer, then publishes the installer, portable ZIP, SHA-256 checksums and build metadata as fingerprinted Jenkins artifacts. See [Jenkins setup and artifact publishing](docs/JENKINS.md) for the job and agent requirements.
 
-Actual Jenkins publication requires the target controller, job and agent configuration. The checked-in pipeline is not a claim that a Jenkins build has been executed.
+The local release is published by **CppCoverageTool-Windows-Release** on **e-disk-agent**. See [the verified publication record](docs/JENKINS-RELEASE-2.0.1.md). Other Jenkins deployments can configure their own controller and agent using the same pipeline.
 
 ## Build from source
 

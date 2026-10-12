@@ -19,7 +19,10 @@ pipeline {
     stages {
         stage('Checkout release') {
             steps {
-                checkout scm
+                script {
+                    def revision = checkout scm
+                    env.RELEASE_PIPELINE_COMMIT = revision.GIT_COMMIT
+                }
                 stash name: 'release-verification', includes: 'scripts/verify-browser.mjs'
                 powershell '''
                     $ErrorActionPreference = 'Stop'
@@ -107,7 +110,7 @@ pipeline {
                     $ErrorActionPreference = 'Stop'
                     $commit = git rev-parse HEAD
                     if ($LASTEXITCODE -ne 0) { throw 'Could not read the release commit.' }
-                    @{ tag = $env:RELEASE_TAG; commit = $commit; pipelineCommit = $env:GIT_COMMIT; buildUrl = $env:BUILD_URL; node = (& node --version); managedRuntime = [bool]$env:MANAGED_NODE_EXECUTABLE; capturedWith = 'CDP Page.captureScreenshot'; verifiedInstaller = $true } |
+                    @{ tag = $env:RELEASE_TAG; commit = $commit; pipelineCommit = $env:RELEASE_PIPELINE_COMMIT; buildUrl = $env:BUILD_URL; node = (& node --version); managedRuntime = [bool]$env:MANAGED_NODE_EXECUTABLE; capturedWith = 'CDP Page.captureScreenshot'; verifiedInstaller = $true } |
                         ConvertTo-Json | Set-Content -Encoding UTF8 release/BUILD-METADATA.json
                 '''
             }
