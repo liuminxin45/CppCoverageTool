@@ -8,6 +8,8 @@ Create a Pipeline job with **Pipeline script from SCM**, repository `https://git
 
 Set `WINDOWS_AGENT` to the actual Windows agent label and `RELEASE_TAG` to `v2.0.1` (or a subsequent published release tag). The checkout verifies that the package version matches the tag. Failed validation prevents the publishing stage.
 
+Managed machines may set `MANAGED_NODE_EXECUTABLE` to an already approved Node.js executable. Its SHA-256 must exactly match the pinned official 24.19.0 binary. Job-local forwarding commands use that executable with npm from the verified workspace distribution; no shared runtime is changed and executable-path network policies remain in force.
+
 The agent needs:
 
 - Windows x64 with .NET Framework 4.8 and Windows PowerShell.

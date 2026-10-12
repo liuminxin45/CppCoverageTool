@@ -10,10 +10,11 @@ pipeline {
     parameters {
         string(name: 'WINDOWS_AGENT', defaultValue: 'e-disk-agent', description: 'Windows x64 agent with MSVC, Edge and OpenCppCoverage')
         string(name: 'RELEASE_TAG', defaultValue: 'v2.0.1', description: 'Immutable Git release tag to build and publish')
+        string(name: 'MANAGED_NODE_EXECUTABLE', defaultValue: '', description: 'Optional existing Node.js executable; must match the official pinned SHA-256')
     }
     environment {
         NODE_RELEASE_HOME = "${env.WORKSPACE}\\.ci-tools\\node-v24.19.0-win-x64"
-        PATH = "${env.WORKSPACE}\\.ci-tools\\node-v24.19.0-win-x64;${env.PATH}"
+        PATH = "${env.WORKSPACE}\\.ci-tools\\bin;${env.PATH}"
     }
     stages {
         stage('Checkout release') {
@@ -55,6 +56,16 @@ pipeline {
                         [IO.Compression.ZipFile]::ExtractToDirectory($archive, $tools)
                     }
                     if ((Get-Sha256 (Join-Path $env:NODE_RELEASE_HOME 'node.exe')) -ne '3602f2bb1a10f2cbab4c36886218a33c1ab3db87290e73b033c46c77147d0237') { throw 'Pinned Node executable checksum does not match.' }
+                    $nodeExecutable = Join-Path $env:NODE_RELEASE_HOME 'node.exe'
+                    if ($env:MANAGED_NODE_EXECUTABLE) { $nodeExecutable = $env:MANAGED_NODE_EXECUTABLE }
+                    if (-not [IO.Path]::IsPathRooted($nodeExecutable) -or (Get-Sha256 $nodeExecutable) -ne '3602f2bb1a10f2cbab4c36886218a33c1ab3db87290e73b033c46c77147d0237') { throw 'Managed Node executable does not match the pinned official release.' }
+                    $bin = Join-Path $tools 'bin'
+                    New-Item -ItemType Directory -Force -Path $bin | Out-Null
+                    $nodeDirectory = Split-Path $nodeExecutable -Parent
+                    $prefix = '@echo off' + [Environment]::NewLine + 'set "PATH=%~dp0;' + $nodeDirectory + ';%PATH%"' + [Environment]::NewLine
+                    [IO.File]::WriteAllText((Join-Path $bin 'node.cmd'), $prefix + '"' + $nodeExecutable + '" %*' + [Environment]::NewLine)
+                    $npmCli = Join-Path $env:NODE_RELEASE_HOME 'node_modules/npm/bin/npm-cli.js'
+                    [IO.File]::WriteAllText((Join-Path $bin 'npm.cmd'), $prefix + '"' + $nodeExecutable + '" "' + $npmCli + '" %*' + [Environment]::NewLine)
                     & node --version
                     if ($LASTEXITCODE -ne 0) { throw 'Pinned Node runtime is unavailable.' }
                     & npm.cmd --version
@@ -87,7 +98,7 @@ pipeline {
                     $ErrorActionPreference = 'Stop'
                     $commit = git rev-parse HEAD
                     if ($LASTEXITCODE -ne 0) { throw 'Could not read the release commit.' }
-                    @{ tag = $env:RELEASE_TAG; commit = $commit; pipelineCommit = $env:GIT_COMMIT; buildUrl = $env:BUILD_URL; node = (& node --version); capturedWith = 'CDP Page.captureScreenshot'; verifiedInstaller = $true } |
+                    @{ tag = $env:RELEASE_TAG; commit = $commit; pipelineCommit = $env:GIT_COMMIT; buildUrl = $env:BUILD_URL; node = (& node --version); managedRuntime = [bool]$env:MANAGED_NODE_EXECUTABLE; capturedWith = 'CDP Page.captureScreenshot'; verifiedInstaller = $true } |
                         ConvertTo-Json | Set-Content -Encoding UTF8 release/BUILD-METADATA.json
                 '''
             }
