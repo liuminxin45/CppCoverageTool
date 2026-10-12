@@ -1,10 +1,10 @@
-# CoverageTool
+# CppCoverageTool
 
-CoverageTool 是一个 Windows 桌面端 [OpenCppCoverage](https://github.com/OpenCppCoverage/OpenCppCoverage) 图形界面工具。它会从 `PATH` 自动检测 `OpenCppCoverage.exe`，并提供目标程序、源码目录、可选 PDB 源码路径替换、输出格式、排除路径和 COV 文件合并等常用配置。
+**OpenCppCoverage 的 Qt 图形界面，用于 Windows C++ 覆盖率分析与报告合并。**
 
-## 解决的核心痛点
+用 [OpenCppCoverage](https://github.com/OpenCppCoverage/OpenCppCoverage) 分析程序时，需要指定目标程序、源码目录、输出格式和排除规则。CppCoverageTool 把这些常用参数放进桌面界面，保存配置，方便重复运行和合并多次执行的覆盖率结果。
 
-OpenCppCoverage 原项目主要通过命令行使用，参数较多且不容易记忆。CoverageTool 将常用覆盖率分析流程封装成 GUI 快捷操作，让用户通过选择目标程序、源码目录、输出目录和排除规则即可生成覆盖率报告，减少反复查命令和手写参数的成本。
+程序会从 `PATH` 自动检测 `OpenCppCoverage.exe`，实际分析仍由 OpenCppCoverage 执行。需要单独安装它；构建本工具还需要 Qt 和 Visual Studio，具体版本见下方环境要求。
 
 ## 功能
 
