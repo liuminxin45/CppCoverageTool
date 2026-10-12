@@ -86,7 +86,14 @@ pipeline {
         }
         stage('Real demo and CDP screenshots') {
             steps {
-                powershell './scripts/build-demo.ps1'
+                powershell '''
+                    $ErrorActionPreference = 'Stop'
+                    $previousPath = $env:PATH
+                    try {
+                        $env:PATH = "$env:WINDIR/System32;$env:WINDIR;$env:WINDIR/System32/Wbem"
+                        ./scripts/build-demo.ps1
+                    } finally { $env:PATH = $previousPath }
+                '''
                 bat 'npm run screenshots:demo'
             }
         }
