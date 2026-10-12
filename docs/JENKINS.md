@@ -11,7 +11,7 @@ Set `WINDOWS_AGENT` to the actual Windows agent label and `RELEASE_TAG` to `v2.0
 The agent needs:
 
 - Windows x64 with .NET Framework 4.8 and Windows PowerShell.
-- Node.js 24.19.0 and npm; other supported Node versions can build the web application, while the installer pins and verifies its bundled Node.js 24.19.0 runtime.
+- The pipeline provisions an official SHA-256-verified Node.js 24.19.0/npm distribution in its own workspace. It does not replace the agent's shared Node installation. The installer pins and verifies the same runtime.
 - MSVC C++ build tools and matching Windows SDK, detectable through `vswhere`.
 - OpenCppCoverage and Microsoft Edge.
 - Access to GitHub and registry.npmjs.org. The installer build verifies the runtime against the official pinned SHA-256 and includes the Node.js license.
@@ -29,5 +29,7 @@ Successful builds expose these files under the Jenkins build's **Artifacts**:
 The installer keeps settings and reports outside its application directory. OpenCppCoverage is installed separately. The build does not modify or bundle its executable.
 
 The installer is unsigned unless your release process signs it separately. This repository does not embed a signing certificate or Jenkins API credential.
+
+The pipeline definition is loaded from `main`; the application source is checked out at `RELEASE_TAG`. Build metadata records both commits so pipeline maintenance can validate an existing immutable application release.
 
 Actual publication requires a reachable Jenkins controller, a configured job and an available Windows agent. A checked-in Jenkinsfile alone is not evidence of a Jenkins release build.
