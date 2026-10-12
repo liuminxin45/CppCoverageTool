@@ -8,11 +8,11 @@ import { createHash } from 'node:crypto';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const releaseRoot = path.join(root, 'release');
-const destination = path.join(releaseRoot, 'CppCoverageTool-2.0.0-windows');
+const destination = path.join(releaseRoot, 'CppCoverageTool-2.0.1-windows');
 if (path.dirname(destination) !== releaseRoot) throw new Error('Invalid package path.');
 await rm(destination, { recursive: true, force: true });
 await mkdir(destination, { recursive: true });
-for (const name of ['dist', 'server', 'docs', 'start.cmd', 'README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md']) await cp(path.join(root, name), path.join(destination, name), { recursive: true });
+for (const name of ['dist', 'server', 'docs', 'examples', 'Jenkinsfile', 'start.cmd', 'README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md']) await cp(path.join(root, name), path.join(destination, name), { recursive: true });
 await mkdir(path.join(destination, 'resources'), { recursive: true });
 await cp(path.join(root, 'node_modules/chatgpt-desktop-kit/dist/tokens.css'), path.join(destination, 'resources/tokens.css'));
 await cp(path.join(root, 'node_modules/chatgpt-desktop-kit/LICENSE'), path.join(destination, 'resources/desktop-ui-LICENSE'));
@@ -40,8 +40,8 @@ async function copyDependency(name, from) {
   for (const dependency of Object.keys(manifest.dependencies || {})) await copyDependency(dependency, directory);
 }
 await copyDependency('fast-xml-parser', root);
-await writeFile(path.join(destination, 'package.json'), JSON.stringify({ name: 'cpp-coverage-tool-runtime', version: '2.0.0', private: true, type: 'module', engines: { node: '^22.23.3 || ^24.19.0' } }, null, 2));
-const archive = path.join(releaseRoot, 'CppCoverageTool-2.0.0-windows.zip');
+await writeFile(path.join(destination, 'package.json'), JSON.stringify({ name: 'cpp-coverage-tool-runtime', version: '2.0.1', private: true, type: 'module', engines: { node: '^22.23.3 || ^24.19.0' } }, null, 2));
+const archive = path.join(releaseRoot, 'CppCoverageTool-2.0.1-windows.zip');
 await rm(archive, { force: true });
 await promisify(execFile)('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(root, 'scripts/archive.ps1'), '-Source', destination, '-Destination', archive], { windowsHide: true });
 const hash = createHash('sha256').update(await readFile(archive)).digest('hex');

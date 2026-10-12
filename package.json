@@ -1,6 +1,6 @@
 {
   "name": "cpp-coverage-tool",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "private": true,
   "type": "module",
   "engines": {
@@ -14,6 +14,9 @@
     "check:ui": "node node_modules/chatgpt-desktop-kit/dist/check-consumer.mjs",
     "test:browser": "node scripts/verify-browser.mjs",
     "test:package": "node scripts/verify-package.mjs",
+    "screenshots:demo": "node scripts/capture-demo-cdp.mjs",
+    "installer": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/build-installer.ps1",
+    "test:installer": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/verify-installer.ps1",
     "package": "node scripts/package.mjs"
   },
   "dependencies": {

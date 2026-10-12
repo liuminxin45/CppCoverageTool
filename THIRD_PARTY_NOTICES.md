@@ -6,7 +6,7 @@ CppCoverageTool source is released under the MIT License. Dependencies retain th
 - **React and React DOM** — MIT. Their license files are included in the release package.
 - **fast-xml-parser and its runtime dependencies** — original package licenses are included with their packaged sources.
 - **OpenCppCoverage** — installed separately; no upstream binary is bundled or modified. Consult its distribution for its license terms.
-- **Node.js** — installed separately; no runtime binary is bundled.
+- **Node.js 24.19.0** — the Windows installer bundles the official Windows x64 executable, verified against its release SHA-256. Its complete license is included in `resources/node-LICENSE`. The portable ZIP requires an external runtime.
 
 Release packages retain the UI library's LICENSE, NOTICE and generated THIRD_PARTY_NOTICES, plus React license files in `resources/`. Backend dependency directories retain their package license files.
 

@@ -54,7 +54,7 @@ try {
       await page.getByRole('combobox', { name: 'Appearance' }).click(); await page.getByRole('option', { name: theme === 'light' ? 'Dark' : 'Light', exact: true }).click();
       assert.equal(await page.getByLabel('Target executable', { exact: true }).inputValue(), 'C:\\draft path\\app.exe');
       await page.getByRole('button', { name: 'About', exact: true }).click(); await page.getByRole('dialog').waitFor();
-      assert.ok((await page.getByRole('dialog').innerText()).includes('Version 2.0.0'));
+      assert.ok((await page.getByRole('dialog').innerText()).includes('Version 2.0.1'));
       await page.screenshot({ path: path.join(root, `docs/screenshots/about-${theme}-${viewport.width}.png`) });
       await page.keyboard.press('Escape'); await page.getByRole('dialog').waitFor({ state: 'hidden' });
       await page.waitForFunction(() => document.activeElement?.textContent === 'About');

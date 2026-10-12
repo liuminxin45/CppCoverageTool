@@ -1,4 +1,4 @@
-param([switch]$Package)
+param([switch]$Package, [switch]$Installer)
 $ErrorActionPreference = 'Stop'
 Push-Location $PSScriptRoot
 try {
@@ -9,8 +9,14 @@ try {
         & npm.cmd run $task
         if ($LASTEXITCODE -ne 0) { throw "Validation failed: $task" }
     }
-    if ($Package) {
+    if ($Package -or $Installer) {
         & npm.cmd run package
         if ($LASTEXITCODE -ne 0) { throw 'Packaging failed.' }
+    }
+    if ($Installer) {
+        foreach ($task in @('installer', 'test:installer')) {
+            & npm.cmd run $task
+            if ($LASTEXITCODE -ne 0) { throw "Installer validation failed: $task" }
+        }
     }
 } finally { Pop-Location }

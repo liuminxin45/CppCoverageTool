@@ -2,7 +2,7 @@
 
 A local web workspace for Windows C++ code coverage, powered by [OpenCppCoverage](https://github.com/OpenCppCoverage/OpenCppCoverage).
 
-Version **2.0.0** replaces the Qt application with a React interface and a small Node.js service. The interface uses [ChatGPT Desktop UI](https://github.com/liuminxin45/ChatGPT-Desktop-UI), pinned to an immutable Git revision. Coverage runs on your computer; source code and reports are never uploaded by this application.
+Version **2.0.1** replaces the Qt application with a React interface and a small Node.js service. The interface uses [ChatGPT Desktop UI](https://github.com/liuminxin45/ChatGPT-Desktop-UI), pinned to an immutable Git revision. Coverage runs on your computer; source code and reports are never uploaded by this application.
 
 ## What it does
 
@@ -15,25 +15,60 @@ Version **2.0.0** replaces the Qt application with a React interface and a small
 
 The report includes overall line coverage, file sorting and search, uncovered-file filters, source snapshots, per-line hit counts, next-uncovered-line navigation, light/dark themes and a printable summary. It works offline without external scripts, fonts or services. OpenCppCoverage's HTML exporter is replaced by a post-run report pipeline; the upstream executable is not modified.
 
-![Coverage workspace](docs/screenshots/workspace-light-1280.png)
+## Screenshots from a real C++ run
 
-![Custom HTML report](docs/screenshots/report-light-1280.png)
+The demo in [examples/coverage-demo](examples/coverage-demo) models pricing, shipping and stock checks. It was compiled with PDB debug information and executed by OpenCppCoverage: **26/33 executable lines covered (78.8%), across 3 source files**. These are actual application/report screenshots, captured through CDP `Page.captureScreenshot` over an isolated Chromium pipe; no desktop automation or mocked coverage data was used.
+
+**Coverage workspace — completed run**
+
+![Coverage workspace after a real run](docs/screenshots/demo-workspace-light.png)
+
+**Standalone HTML report**
+
+![Real demo HTML coverage report](docs/screenshots/demo-report-light.png)
+
+**Source detail — uncovered-line navigation**
+
+![Uncovered source lines in the real report](docs/screenshots/demo-source-light.png)
+
+<details>
+<summary>Dark theme and merge workspace</summary>
+
+![Coverage workspace in dark theme](docs/screenshots/demo-workspace-dark.png)
+
+![HTML report in dark theme](docs/screenshots/demo-report-dark.png)
+
+![Merge workspace](docs/screenshots/demo-merge-dark.png)
+
+</details>
 
 ## Requirements
 
 - Windows 10 or later and a current Edge, Chrome or Firefox browser.
-- Node.js 22.23.3+ (22.x) or 24.19.0+ (24.x), matching the UI library's supported runtime.
+- Node.js 22.23.3+ (22.x) or 24.19.0+ (24.x) for source/portable usage. The Windows installer includes its own Node.js runtime.
 - OpenCppCoverage, installed separately and added to PATH (the standard installation directory is also detected).
 - Target executables built with matching PDB files. Matching local source files are needed for source snapshots.
 - Git and npm when building from source. Qt, CMake and Visual Studio are not required to build the interface.
 
-## Start from the release package
+## Install on Windows
 
-Download and extract `CppCoverageTool-2.0.0-windows.zip` from [Releases](https://github.com/liuminxin45/CppCoverageTool/releases). Install Node.js and OpenCppCoverage, then double-click `start.cmd`.
+Run `CppCoverageTool-2.0.1-windows-x64-setup.exe`. The installer installs for your Windows account, bundles a checksum-verified Node.js runtime, adds a Start menu shortcut and registers an uninstall entry in Windows Apps. No Qt, npm installation, administrator access or external Node.js installation is required. Install OpenCppCoverage separately.
 
-The package contains the prebuilt interface and backend dependencies. No npm installation or compiler is needed. Node.js and OpenCppCoverage binaries are not bundled.
+The launcher reuses an existing Node.js executable in PATH only if its SHA-256 exactly matches the bundled official runtime; otherwise it uses the bundled copy. This accommodates managed Windows environments that approve network access by executable location.
 
-Keep the service window open while using the application. Close it with Ctrl+C when finished. The service listens only on `http://127.0.0.1:47831`; use `PORT` to select another port if needed. An occupied port is reported as an error rather than connecting to another service.
+Launch **CppCoverageTool** from the Start menu. The workspace opens in your browser and a system tray icon keeps the local service available. Use the tray's **Exit** command to stop the service and any active coverage process. Closing the browser tab leaves the service running. Uninstall through Windows Apps; existing settings, reports and untracked user files are preserved.
+
+Installers are unsigned. Download from your trusted Jenkins release build or the project's [Releases](https://github.com/liuminxin45/CppCoverageTool/releases), and verify `SHA256SUMS.txt`.
+
+For the portable option, extract `CppCoverageTool-2.0.1-windows.zip`, install Node.js and OpenCppCoverage, then run `start.cmd`. Keep that service window open and use Ctrl+C when finished. The portable ZIP does not bundle Node.js.
+
+Both variants listen only on `http://127.0.0.1:47831`; use `PORT` to select another port. An occupied port is reported as an error rather than adopting another service.
+
+## Jenkins release
+
+[Jenkinsfile](Jenkinsfile) builds a tagged release on a Windows agent, runs validation and the real demo/CDP capture, builds and tests the installer, then publishes the installer, portable ZIP, SHA-256 checksums and build metadata as fingerprinted Jenkins artifacts. See [Jenkins setup and artifact publishing](docs/JENKINS.md) for the job and agent requirements.
+
+Actual Jenkins publication requires the target controller, job and agent configuration. The checked-in pipeline is not a claim that a Jenkins build has been executed.
 
 ## Build from source
 
@@ -45,7 +80,7 @@ npm run build
 npm start
 ```
 
-Or run `./build.ps1 -Package` to validate and create a release ZIP. Git dependency preparation must be enabled; do not install with `--ignore-scripts`. If your npm version requires lifecycle approval, approve only `chatgpt-desktop-kit` and `esbuild` before installation.
+Or run `./build.ps1 -Package` to validate and create a release ZIP; use `./build.ps1 -Installer` to build and validate the Windows installer too. Git dependency preparation must be enabled; do not install with `--ignore-scripts`. If your npm version requires lifecycle approval, approve only `chatgpt-desktop-kit` and `esbuild` before installation.
 
 For frontend development, run `node server/index.mjs --dev` and `npm run dev` in separate terminals. Open the Vite URL. Development-only origin support is enabled explicitly by `--dev`.
 
@@ -93,11 +128,15 @@ npm run check:ui
 npm run build
 npm run package
 npm run test:package
+npm run installer
+npm run test:installer
 ```
 
 Browser checks use installed Microsoft Edge by default; set `COVERAGE_BROWSER=chrome` to use Chrome. To run against Playwright's Chromium, install it with `npx playwright install chromium` and set `COVERAGE_BROWSER=chromium`.
 
 The optional real-engine integration test needs a compiled copy of `tests/fixture.cpp` with debug information. Set `COVERAGE_TEST_EXE` to its absolute `.exe` path and run `npm test`. It verifies complementary coverage runs, binary merge, source snapshots and process cancellation. Without that variable, only the real-engine test is skipped.
+
+To regenerate the real screenshots, run `./scripts/build-demo.ps1` followed by `npm run screenshots:demo`. MSVC and OpenCppCoverage are needed for that demo. The capture script attaches CDP sessions to an isolated Edge process and uses `Page.captureScreenshot` directly.
 
 See [the 2.0 review and validation record](docs/REVIEW.md) for the audited behavior, rendered surfaces and remaining limits.
 

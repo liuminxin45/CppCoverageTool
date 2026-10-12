@@ -48,6 +48,16 @@ Reference: [the pinned UI library](https://github.com/liuminxin45/ChatGPT-Deskto
 
 ## Limits and migration
 
+## Version 2.0.1 additions
+
+The README now contains six real-run screenshots produced through direct CDP `Page.captureScreenshot` calls over Chromium's isolated pipe. A compiled three-file C++ demo produced 26/33 covered executable lines (78.8%) with readable source snapshots. The earlier synthetic screenshots remain available as UI regression references.
+
+The Windows installer was built with the Windows .NET Framework compiler. Validation covered installation, verified bundled runtime contents, Windows registration/Start menu shortcut, frontend/service startup, an upgrade while running, orderly shutdown, uninstall, unchanged configuration and preserved untracked user files. The launcher checks a private per-instance shutdown token and only terminates its own process tree. It reuses a matching official Node.js binary in PATH when available, accommodating this machine's restriction on networking from new executable paths; the installer also contains the checksum-identical runtime for machines without Node.js.
+
+Jenkins release stages and build provenance are defined in `Jenkinsfile` and `docs/JENKINS.md`. Actual Jenkins execution/publication remains dependent on the user's controller, job and Windows agent configuration.
+
+## Earlier 2.0 migration limits
+
 - Runtime and coverage execution require Windows, Node.js and a separately installed OpenCppCoverage. The release ZIP contains the built frontend and backend dependencies, not these external executables.
 - Native path-picker dialogs and Explorer handoff are implemented through fixed Windows commands; they were not driven in the browser automation suite. Firefox and Chrome were not separately exercised.
 - Qt registry settings are not imported. Paths need to be configured once after upgrading. Existing COV files remain usable; the latest run is held only for the service session.

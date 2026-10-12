@@ -163,7 +163,7 @@ function App() {
           <footer className="workspace-footer">Local execution · Your source code stays on this computer</footer>
         </main>
       </InternalScrollArea>
-      <Dialog open={about} title="About CppCoverageTool" description="Version 2.0.0" onClose={closeAbout} footer={<Button onClick={closeAbout}>Close</Button>}>
+      <Dialog open={about} title="About CppCoverageTool" description="Version 2.0.1" onClose={closeAbout} footer={<Button onClick={closeAbout}>Close</Button>}>
         <div className="about-copy"><p>A local web workspace for Windows C++ code coverage, powered by OpenCppCoverage.</p><p>Configure a run, merge COV files and explore readable HTML reports with line-by-line coverage. Analysis runs on your computer; the interface does not upload your code or reports.</p><p>Built with React and the ChatGPT Desktop UI component library. OpenCppCoverage is installed separately.</p><p><a href="https://github.com/liuminxin45/CppCoverageTool" target="_blank" rel="noreferrer">Source code and documentation ↗</a></p><p>Released under the MIT License.</p></div>
       </Dialog><Toaster />
     </div>

@@ -11,8 +11,8 @@ import { PassThrough } from 'node:stream';
 const directory = await mkdtemp(path.join(os.tmpdir(), 'cpp-coverage-package-'));
 let app;
 try {
-  await promisify(execFile)('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.resolve('scripts/extract.ps1'), '-Archive', path.resolve('release/CppCoverageTool-2.0.0-windows.zip'), '-Destination', directory], { windowsHide: true });
-  const packageRoot = path.join(directory, 'CppCoverageTool-2.0.0-windows');
+  await promisify(execFile)('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.resolve('scripts/extract.ps1'), '-Archive', path.resolve('release/CppCoverageTool-2.0.1-windows.zip'), '-Destination', directory], { windowsHide: true });
+  const packageRoot = path.join(directory, 'CppCoverageTool-2.0.1-windows');
   const { createApp } = await import(pathToFileURL(path.join(packageRoot, 'server/app.mjs')).href);
   const dataDirectory = path.join(directory, 'data'); const sources = path.join(directory, 'source'); await mkdir(sources);
   await writeFile(path.join(sources, 'sample.cpp'), 'int main() { return 0; }');

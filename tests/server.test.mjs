@@ -36,6 +36,17 @@ test('settings persist and malformed requests preserve the saved configuration',
   assert.equal((await (await fetch(`${url}/api/state`)).json()).settings.target, settings.target);
   assert.equal(JSON.parse(await readFile(path.join(dataDirectory, 'settings.json'), 'utf8')).target, settings.target);
 });
+test('desktop shutdown requires its owning session and never exposes the token', async t => {
+  let requested = false;
+  const { post, url } = await fixture(t, { shutdownToken: 'private-test-session', instanceId: 'test-instance', onShutdown: () => { requested = true; } });
+  const state = await (await fetch(`${url}/api/state`)).json();
+  assert.equal(state.instanceId, 'test-instance'); assert.ok(!JSON.stringify(state).includes('private-test-session'));
+  assert.equal((await post('shutdown', {})).status, 403);
+  assert.equal((await post('shutdown', {}, { 'X-Coverage-Session': 'different-session' })).status, 403);
+  assert.equal(requested, false);
+  assert.equal((await post('shutdown', {}, { 'X-Coverage-Session': 'private-test-session' })).status, 200);
+  await new Promise(resolve => setImmediate(resolve)); assert.equal(requested, true);
+});
 test('launch validation, concurrency lock, process failure and bounded logs', async t => {
   let launched;
   const { post, url, dataDirectory } = await fixture(t, { platform: 'win32', detect: async () => process.execPath,

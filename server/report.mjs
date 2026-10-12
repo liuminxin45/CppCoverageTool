@@ -67,7 +67,7 @@ export async function generateReport({ output, mode, sources, startedAt }) {
   for (const file of files) await attachSource(file, sources, budget);
   const total = files.reduce((sum, file) => sum + file.total, 0);
   const covered = files.reduce((sum, file) => sum + file.covered, 0);
-  const data = { version: '2.0.0', mode, generatedAt: new Date().toISOString(), startedAt, files, total, covered };
+  const data = { version: '2.0.1', mode, generatedAt: new Date().toISOString(), startedAt, files, total, covered };
   const [template, css, script, tokens] = await Promise.all([
     readFile(path.join(directory, 'report/template.html'), 'utf8'),
     readFile(path.join(directory, 'report/style.css'), 'utf8'),

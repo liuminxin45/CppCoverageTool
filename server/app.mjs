@@ -15,7 +15,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon' };
 
 export async function createApp({ dataDirectory = path.join(process.env.LOCALAPPDATA || os.homedir(), 'CppCoverageTool'),
-  platform = process.platform, detect = detectCoverage, launch = spawn, development = false } = {}) {
+  platform = process.platform, detect = detectCoverage, launch = spawn, development = false,
+  shutdownToken = null, instanceId = null, onShutdown = null } = {}) {
   const settingsFile = path.join(dataDirectory, 'settings.json');
   let settings = defaults();
   let settingsError = null;
@@ -128,11 +129,18 @@ export async function createApp({ dataDirectory = path.join(process.env.LOCALAPP
     try {
       const url = new URL(request.url, `http://${request.headers.host}`);
       if (url.pathname.startsWith('/api/')) {
-        if (request.method === 'GET' && url.pathname === '/api/state') return send(200, { version: '2.0.0', settings, settingsError, program: await detect(), job: publicJob() });
+        if (request.method === 'GET' && url.pathname === '/api/state') return send(200, { version: '2.0.1', instanceId, settings, settingsError, program: await detect(), job: publicJob() });
         if (request.method !== 'POST') return send(405, { error: 'Method not allowed.' });
         if (request.headers['x-coverage-client'] !== '1' || !request.headers['content-type']?.startsWith('application/json')) return send(403, { error: 'A JSON application request is required.' });
         const value = await body(request);
         switch (url.pathname) {
+          case '/api/shutdown': {
+            if (!shutdownToken || !onShutdown) return send(404, { error: 'No desktop launcher owns this service.' });
+            if (request.headers['x-coverage-session'] !== shutdownToken) return send(403, { error: 'The desktop session does not match.' });
+            send(200, { ok: true });
+            setImmediate(() => onShutdown());
+            return;
+          }
           case '/api/settings': await save(value); return send(200, { settings });
           case '/api/run': return send(202, { job: await start('coverage', value) });
           case '/api/merge': return send(202, { job: await start('merge', value) });
