@@ -34,4 +34,6 @@ The installer is unsigned unless your release process signs it separately. This 
 
 The pipeline definition is loaded from `main`; the application source is checked out at `RELEASE_TAG`. Build metadata records both commits so pipeline maintenance can validate an existing immutable application release.
 
+The browser verification harness is retained from the pipeline revision before switching to the application tag. This lets synchronization fixes validate older immutable application releases without changing their runtime code; its provenance is the same recorded pipeline commit.
+
 Actual publication requires a reachable Jenkins controller, a configured job and an available Windows agent. A checked-in Jenkinsfile alone is not evidence of a Jenkins release build.

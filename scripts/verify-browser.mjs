@@ -10,6 +10,7 @@ import { PassThrough } from 'node:stream';
 import { defaults } from '../server/coverage.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const expectedVersion = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8')).version;
 const verification = path.join(root, '.verification', 'browser');
 await mkdir(verification, { recursive: true });
 await mkdir(path.join(root, 'docs', 'screenshots'), { recursive: true });
@@ -54,7 +55,7 @@ try {
       await page.getByRole('combobox', { name: 'Appearance' }).click(); await page.getByRole('option', { name: theme === 'light' ? 'Dark' : 'Light', exact: true }).click();
       assert.equal(await page.getByLabel('Target executable', { exact: true }).inputValue(), 'C:\\draft path\\app.exe');
       await page.getByRole('button', { name: 'About', exact: true }).click(); await page.getByRole('dialog').waitFor();
-      assert.ok((await page.getByRole('dialog').innerText()).includes('Version 2.0.1'));
+      assert.ok((await page.getByRole('dialog').innerText()).includes(`Version ${expectedVersion}`));
       await page.screenshot({ path: path.join(root, `docs/screenshots/about-${theme}-${viewport.width}.png`) });
       await page.keyboard.press('Escape'); await page.getByRole('dialog').waitFor({ state: 'hidden' });
       await page.waitForFunction(() => document.activeElement?.textContent === 'About');
@@ -66,8 +67,16 @@ try {
       await page.getByLabel('Target executable', { exact: true }).fill(process.execPath);
       await page.getByLabel('Source directory', { exact: true }).fill(path.join(root, 'tests'));
       await page.getByLabel('Report directory', { exact: true }).fill(path.join(verification, 'outputs'));
+      const previousJobId = app.getJob()?.id;
       await page.getByRole('button', { name: 'Run coverage', exact: true }).click();
-      await page.getByText('failed', { exact: true }).waitFor();
+      for (let attempt = 0; attempt < 100; attempt++) {
+        const latest = app.getJob();
+        if (latest?.id !== previousJobId && latest?.status === 'failed') break;
+        await page.waitForTimeout(100);
+      }
+      const latest = app.getJob();
+      assert.ok(latest?.id !== previousJobId && latest?.status === 'failed', 'The new mock process must finish before inspecting its UI.');
+      await page.waitForFunction(output => document.querySelector('.output-path')?.textContent === output && document.querySelector('.execution-log')?.textContent?.includes('exit code 5'), latest.output);
       assert.ok((await page.getByLabel('Execution log').innerText()).includes('exit code 5'));
       await page.screenshot({ path: path.join(verification, `failure-${theme}-${viewport.width}.png`) });
       evidence.push({ viewport, theme, typography, routes: ['coverage', 'merge', 'about', 'validation error', 'process failure'], draftsRetained: true });

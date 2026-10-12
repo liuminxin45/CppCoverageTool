@@ -20,6 +20,7 @@ pipeline {
         stage('Checkout release') {
             steps {
                 checkout scm
+                stash name: 'release-verification', includes: 'scripts/verify-browser.mjs'
                 powershell '''
                     $ErrorActionPreference = 'Stop'
                     if ($env:RELEASE_TAG -notmatch '^v[0-9]+[.][0-9]+[.][0-9]+$') { throw 'Invalid release tag.' }
@@ -30,6 +31,7 @@ pipeline {
                     $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
                     if ('v' + $version -ne $env:RELEASE_TAG) { throw 'Version does not match the release tag.' }
                 '''
+                unstash 'release-verification'
             }
         }
         stage('Pinned Node runtime') {
