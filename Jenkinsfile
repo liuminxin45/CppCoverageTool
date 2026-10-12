@@ -92,8 +92,8 @@ pipeline {
             steps {
                 bat 'npm run package'
                 bat 'npm run test:package'
-                powershell './scripts/build-installer.ps1'
-                powershell './scripts/verify-installer.ps1'
+                bat 'npm run installer'
+                bat 'npm run test:installer'
                 powershell '''
                     $ErrorActionPreference = 'Stop'
                     $commit = git rev-parse HEAD
