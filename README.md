@@ -1,59 +1,106 @@
 # CppCoverageTool
 
-**OpenCppCoverage 的 Qt 图形界面，用于 Windows C++ 覆盖率分析与报告合并。**
+A local web workspace for Windows C++ code coverage, powered by [OpenCppCoverage](https://github.com/OpenCppCoverage/OpenCppCoverage).
 
-用 [OpenCppCoverage](https://github.com/OpenCppCoverage/OpenCppCoverage) 分析程序时，需要指定目标程序、源码目录、输出格式和排除规则。CppCoverageTool 把这些常用参数放进桌面界面，保存配置，方便重复运行和合并多次执行的覆盖率结果。
+Version **2.0.0** replaces the Qt application with a React interface and a small Node.js service. The interface uses [ChatGPT Desktop UI](https://github.com/liuminxin45/ChatGPT-Desktop-UI), pinned to an immutable Git revision. Coverage runs on your computer; source code and reports are never uploaded by this application.
 
-程序会从 `PATH` 自动检测 `OpenCppCoverage.exe`，实际分析仍由 OpenCppCoverage 执行。需要单独安装它；构建本工具还需要 Qt 和 Visual Studio，具体版本见下方环境要求。
+## What it does
 
-## 功能
+- Detects OpenCppCoverage in PATH or its standard Program Files directory.
+- Runs an executable with source/module filters, optional PDB path substitution and target arguments.
+- Merges `.cov` files recursively while excluding the report output directory.
+- Saves local configuration and streams a bounded execution log.
+- Stops a running coverage process and its child processes.
+- Generates a custom, standalone HTML report from Cobertura XML, alongside binary COV data.
 
-- 从 `PATH` 自动检测 `OpenCppCoverage.exe`，未检测到时提供 GitHub 下载入口。
-- 配置目标程序、源码目录、可选 PDB 源码路径替换、输出目录、排除源码路径和额外 OpenCppCoverage 参数。
-- 根据目标程序所在目录自动推断工作目录。
-- 执行覆盖率分析并生成 HTML、二进制 COV 和 Cobertura XML 结果。
-- 合并已有 `.cov` 文件，输出 HTML、二进制 COV 和 Cobertura XML 报告。
-- 支持运行时切换英文和简体中文界面。
-- 使用 `QSettings` 保存本地配置。
+The report includes overall line coverage, file sorting and search, uncovered-file filters, source snapshots, per-line hit counts, next-uncovered-line navigation, light/dark themes and a printable summary. It works offline without external scripts, fonts or services. OpenCppCoverage's HTML exporter is replaced by a post-run report pipeline; the upstream executable is not modified.
 
-## 程序截图
+![Coverage workspace](docs/screenshots/workspace-light-1280.png)
 
-![CoverageTool screenshot](docs/screenshot.png)
+![Custom HTML report](docs/screenshots/report-light-1280.png)
 
-## 环境要求
+## Requirements
 
-- Windows
-- Visual Studio 2022，包含 v143 工具集
-- CMake 3.16 或更高版本
-- Qt 5.12.12 x64，且包含 CMake package files，例如 `D:\Qt\Qt5.12.12\5.12.12\msvc2017_64`
-- 单独安装 OpenCppCoverage，并将其加入 `PATH`
+- Windows 10 or later and a current Edge, Chrome or Firefox browser.
+- Node.js 22.23.3+ (22.x) or 24.19.0+ (24.x), matching the UI library's supported runtime.
+- OpenCppCoverage, installed separately and added to PATH (the standard installation directory is also detected).
+- Target executables built with matching PDB files. Matching local source files are needed for source snapshots.
+- Git and npm when building from source. Qt, CMake and Visual Studio are not required to build the interface.
 
-本仓库不内置 OpenCppCoverage、Qt 或其他第三方工具二进制文件。
+## Start from the release package
 
-## 构建
+Download and extract `CppCoverageTool-2.0.0-windows.zip` from [Releases](https://github.com/liuminxin45/CppCoverageTool/releases). Install Node.js and OpenCppCoverage, then double-click `start.cmd`.
 
-```powershell
-.\build.ps1 -Configuration Debug -Platform x64
-.\build.ps1 -Configuration Release -Platform x64
-```
+The package contains the prebuilt interface and backend dependencies. No npm installation or compiler is needed. Node.js and OpenCppCoverage binaries are not bundled.
 
-如果 Qt 未安装在常见路径，可以显式传入 Qt 路径：
+Keep the service window open while using the application. Close it with Ctrl+C when finished. The service listens only on `http://127.0.0.1:47831`; use `PORT` to select another port if needed. An occupied port is reported as an error rather than connecting to another service.
+
+## Build from source
 
 ```powershell
-.\build.ps1 -Configuration Release -Platform x64 -QtDir D:\Qt\Qt5.12.12\5.12.12\msvc2017_64
+npm ci
+npm run check:ui
+npm test
+npm run build
+npm start
 ```
 
-本仓库使用 CMake 作为构建系统。生成的 Visual Studio 工程文件会写入 `build/`，不会提交到仓库。
+Or run `./build.ps1 -Package` to validate and create a release ZIP. Git dependency preparation must be enabled; do not install with `--ignore-scripts`. If your npm version requires lifecycle approval, approve only `chatgpt-desktop-kit` and `esbuild` before installation.
 
-本仓库不随源码分发 OpenCppCoverage、Qt 或其他第三方二进制文件。
+For frontend development, run `node server/index.mjs --dev` and `npm run dev` in separate terminals. Open the Vite URL. Development-only origin support is enabled explicitly by `--dev`.
 
-## 使用
+## Run coverage
 
-1. 启动 `CoverageTool.exe`。
-2. 确认 OpenCppCoverage 已被检测到。如果未检测到，点击下载按钮安装，并将其加入 `PATH`。
-3. 选择目标程序和源码目录。工作目录会自动使用目标程序所在目录。
-4. 按需设置 PDB 源码路径、排除源码路径和额外 OpenCppCoverage 参数。
-5. 选择输出目录。
-6. 点击 `运行覆盖率`。
+1. Choose the target executable and source directory. Its parent directory becomes the working directory.
+2. Choose a report output directory. Every run creates a unique subdirectory, preserving earlier reports.
+3. Expand **Filters and advanced options** if needed. By default, module filtering selects the executable; add DLL names or patterns to include your libraries.
+4. Click **Run coverage**. Configuration is saved before execution.
+5. After completion, click **Open report** or **Open folder**.
 
-如果需要合并覆盖率文件，选择包含 `.cov` 文件的目录，然后点击 `合并 COV 文件`。
+Paths can be typed or selected with native Windows dialogs. The optional PDB prefix maps the original build-time source prefix to your selected source directory.
+
+Target arguments are a JSON array of strings, for example `["--test", "a path with spaces"]`. Arguments are passed directly without shell interpretation. Additional coverage filters use the same array format and support `--excluded_modules`, `--excluded_line_regex`, `--continue_after_cpp_exception` and `--no_aggregate_by_file`. Execution, working-directory and export options are managed by the application.
+
+## Merge reports
+
+Select **Merge reports**, choose an input directory containing `.cov` files and an output directory. Subdirectories are scanned; generated output and symbolic links/junctions are excluded. The input directory cannot be inside the output directory. Up to 1,000 inputs are supported, subject to Windows command-length limits.
+
+The optional source directory enables source snapshots in the merged report. Without readable, matching sources, executable line numbers and hit counts remain available.
+
+## Output and local data
+
+Each successful run produces:
+
+```text
+coverage-<timestamp>-<id>/    # or merge-<timestamp>-<id>
+  html/index.html           # standalone custom report
+  coverage.cov              # merged.cov for a merge
+  coverage.xml              # merged.xml for a merge
+```
+
+Settings are stored at `%LOCALAPPDATA%\CppCoverageTool\settings.json`. Save explicitly with **Save settings**, or run a workflow to save its configuration. Invalid saves preserve your draft. Unreadable existing settings are preserved and a recovery notice is shown. Legacy Qt registry settings are not imported; configure your paths once after upgrading.
+
+The interface retains the latest run for the current service session and the latest 256 KB of process output. Existing reports remain on disk after restarting the service. A nonzero process exit, cancellation or report-generation error is shown as such; partial COV/XML output remains available in the report folder.
+
+HTML reports can embed your source code and local filenames. Review their contents before sharing. Source snapshots are restricted to the configured source directory and capped at 2 MB per file / 20 MB overall. The report measures executable **line coverage**, not branch coverage. An XML limit of 64 MB bounds report generation.
+
+## Validation
+
+```powershell
+npm test
+npm run test:browser
+npm run check:ui
+npm run build
+npm run package
+npm run test:package
+```
+
+Browser checks use installed Microsoft Edge by default; set `COVERAGE_BROWSER=chrome` to use Chrome. To run against Playwright's Chromium, install it with `npx playwright install chromium` and set `COVERAGE_BROWSER=chromium`.
+
+The optional real-engine integration test needs a compiled copy of `tests/fixture.cpp` with debug information. Set `COVERAGE_TEST_EXE` to its absolute `.exe` path and run `npm test`. It verifies complementary coverage runs, binary merge, source snapshots and process cancellation. Without that variable, only the real-engine test is skipped.
+
+See [the 2.0 review and validation record](docs/REVIEW.md) for the audited behavior, rendered surfaces and remaining limits.
+
+## License
+
+MIT. Third-party dependencies retain their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

@@ -1,11 +1,13 @@
-# Third Party Notices
+# Third-party notices
 
-This repository is licensed under MIT only for the source files owned by this project. Third-party dependencies remain under their own licenses.
+CppCoverageTool source is released under the MIT License. Dependencies retain their original licenses.
 
-## Qt
+- **ChatGPT Desktop UI / chatgpt-desktop-kit 0.6.0** — MIT, pinned to `b5ea2bd312e9e9c007b84859d550314ddae4acb5`. Its distribution notices cover bundled dependencies and the adapted shadcn/ui composition patterns.
+- **React and React DOM** — MIT. Their license files are included in the release package.
+- **fast-xml-parser and its runtime dependencies** — original package licenses are included with their packaged sources.
+- **OpenCppCoverage** — installed separately; no upstream binary is bundled or modified. Consult its distribution for its license terms.
+- **Node.js** — installed separately; no runtime binary is bundled.
 
-CoverageTool is built with Qt Widgets. Qt is not bundled in this repository. Use Qt under the terms that apply to your Qt installation, such as LGPL, GPL, or a commercial Qt license.
+Release packages retain the UI library's LICENSE, NOTICE and generated THIRD_PARTY_NOTICES, plus React license files in `resources/`. Backend dependency directories retain their package license files.
 
-## OpenCppCoverage
-
-OpenCppCoverage is not bundled. Users must install it separately or select a local `OpenCppCoverage.exe` path in the application.
+ChatGPT, Codex and OpenAI names belong to their respective owners. This independent application is not affiliated with or endorsed by OpenAI.

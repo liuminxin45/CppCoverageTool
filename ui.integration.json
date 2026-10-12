@@ -1,0 +1,4 @@
+{
+  "forwarders": [], "styleForwarders": [], "adapterManifests": [],
+  "retiredPaths": ["CoverageTool/CoverageTool.cpp", "CoverageTool/CoverageTool.h", "CoverageTool/main.cpp", "CMakeLists.txt"]
+}

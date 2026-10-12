@@ -41,3 +41,10 @@ LastCoverageResults.log
 
 # Nested dependency repositories should not be committed into this repo
 **/.git/
+
+# Web application and local verification output
+node_modules/
+dist/
+release/
+.verification/
+resources/
