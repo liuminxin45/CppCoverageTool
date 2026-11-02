@@ -4,6 +4,12 @@ A local web workspace for Windows C++ code coverage, powered by [OpenCppCoverage
 
 Version **2.0.1** replaces the Qt application with a React interface and a small Node.js service. The interface uses [ChatGPT Desktop UI](https://github.com/liuminxin45/ChatGPT-Desktop-UI), pinned to an immutable Git revision. Coverage runs on your computer; source code and reports are never uploaded by this application.
 
+## When to use it
+
+Use CppCoverageTool when you need to run a Windows executable under line coverage, combine results from several runs, or share a self-contained report for local review. It orchestrates OpenCppCoverage rather than providing a replacement instrumentation engine.
+
+Matching PDB files and readable matching sources are prerequisites for useful source-level results. Reports measure executable line coverage, not branch coverage, and can contain source code and local filenames. Review report contents before sharing them.
+
 ## What it does
 
 - Detects OpenCppCoverage in PATH or its standard Program Files directory.
@@ -54,7 +60,7 @@ The demo in [examples/coverage-demo](examples/coverage-demo) models pricing, shi
 
 Run `CppCoverageTool-2.0.1-windows-x64-setup.exe`. The installer installs for your Windows account, bundles a checksum-verified Node.js runtime, adds a Start menu shortcut and registers an uninstall entry in Windows Apps. No Qt, npm installation, administrator access or external Node.js installation is required. Install OpenCppCoverage separately.
 
-**Published local Jenkins release:** [Build #4 — SUCCESS](http://localhost:8080/job/CppCoverageTool-Windows-Release/4/), [download the Windows installer](http://localhost:8080/job/CppCoverageTool-Windows-Release/4/artifact/release/CppCoverageTool-2.0.1-windows-x64-setup.exe), [SHA-256 checksums](http://localhost:8080/job/CppCoverageTool-Windows-Release/4/artifact/release/SHA256SUMS.txt). These links use the local Jenkins controller and require Jenkins access. The archived installer was downloaded and its checksum verified after publication.
+The [2.0.1 publication record](docs/JENKINS-RELEASE-2.0.1.md) documents a maintainer-local Jenkins release. Its localhost links require access to that controller and are not public download endpoints. Check the project Releases separately for publicly available assets.
 
 The launcher reuses an existing Node.js executable in PATH only if its SHA-256 exactly matches the bundled official runtime; otherwise it uses the bundled copy. This accommodates managed Windows environments that approve network access by executable location.
 
