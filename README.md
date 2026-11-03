@@ -1,5 +1,7 @@
 # CppCoverageTool
 
+<img src="public/icon.png" width="160" alt="CppCoverageTool logo" />
+
 A local web workspace for Windows C++ code coverage, powered by [OpenCppCoverage](https://github.com/OpenCppCoverage/OpenCppCoverage).
 
 Version **2.0.1** replaces the Qt application with a React interface and a small Node.js service. The interface uses [ChatGPT Desktop UI](https://github.com/liuminxin45/ChatGPT-Desktop-UI), pinned to an immutable Git revision. Coverage runs on your computer; source code and reports are never uploaded by this application.
